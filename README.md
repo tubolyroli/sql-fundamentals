@@ -20,7 +20,7 @@ An interactive, searchable, and themeable documentation for SQL fundamentals, de
 
 ## 📖 How to Use
 
-1. Clone the repository: `git clone https://github.com/tubolyroli/sql.git`
+1. Clone the repository: `git clone https://github.com/tubolyroli/sql-fundamentals.git`
 2. Open `experiment.html` in any modern web browser.
 3. Use the sidebar to navigate or the search bar at the top to find specific SQL commands or concepts.
 

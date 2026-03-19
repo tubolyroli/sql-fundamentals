@@ -14,7 +14,6 @@ An interactive, searchable, and themeable documentation for SQL fundamentals, de
 ## 📂 Project Structure
 
 - `index.html`: The main interactive documentation (Primary user version).
-- `experiment.html`: Experimental version for testing new features and UI improvements.
 - `main.tex`: LaTeX source for the documentation.
 
 ## 📖 How to Use

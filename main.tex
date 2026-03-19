@@ -1,0 +1,705 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{mathptmx}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{verbatim}
+
+\onehalfspacing
+
+\renewcommand{\thepart}{\Roman{part}}
+\renewcommand{\thesection}{\thepart.\arabic{section}.}
+\renewcommand{\thesubsection}{\thepart.\arabic{section}.\arabic{subsection}.}
+
+\title{SQL Fundamentals}
+\author{Roland Tuboly}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\part{Foundational Query Structure}
+
+\section{Query Execution and Basic Clauses}
+\textbf{Learning goals:} Understand SQL execution phases and basic data retrieval filtering.
+\textbf{Prerequisites:} Basic understanding of tabular data.
+\textbf{Key terms:} Clause, Query, Execution Order, Filter.
+
+\subsection{Data Definition and Manipulation}
+Data Definition Language (DDL) includes CREATE, ALTER, and DROP for managing databases, tables, and indexes.
+Data Manipulation Language (DML) modifies data states: INSERT INTO adds new records, UPDATE modifies existing records, and DELETE removes records.
+Database systems may utilize TOP or FETCH FIRST n ROWS ONLY as syntactic alternatives to LIMIT.
+
+\subsection{Execution Order vs. Syntax Order}
+The written syntax order of a query is SELECT - FROM - WHERE - GROUP BY - HAVING - ORDER BY - LIMIT. A common logical processing order is FROM - WHERE - GROUP BY - HAVING - SELECT - DISTINCT - ORDER BY - LIMIT, though the optimizer may choose a different physical execution plan.
+
+\subsection{SELECT, FROM, and DISTINCT}
+SELECT dictates columns to return, while DISTINCT forces unique values and can combine multiple columns. Views can be stored for reuse using CREATE VIEW ... AS, which defines a reusable query object rather than returning a result set immediately. LIMIT (number) restricts output to the first specified number of observations.
+
+\begin{verbatim}
+SELECT DISTINCT continent, country FROM nations LIMIT 5;
+\end{verbatim}
+Output: Returns up to 5 unique continent-country pairs.
+
+\subsection{Filtering with WHERE}
+WHERE filters records before aggregation. Operators include \textless\textgreater (not equal), OR, AND, BETWEEN ... AND (inclusive), IN () for multiple values, and IS NULL / IS NOT NULL.
+
+\begin{verbatim}
+SELECT title FROM films 
+WHERE certification IN ('G', 'PG') 
+AND release_year > 2010;
+\end{verbatim}
+Output: Returns titles of films with 'G' or 'PG' certifications released after 2010.
+
+\subsection{Grouping and Filtering Aggregations}
+GROUP BY groups results, usually combined with an aggregate function. HAVING filters grouped records after aggregation.
+
+\begin{verbatim}
+SELECT certification, COUNT(title) AS title_count 
+FROM films 
+GROUP BY certification 
+HAVING COUNT(title) > 500;
+\end{verbatim}
+Output: Returns certifications and their counts, only for groups exceeding 500.
+
+\subsection{Sorting}
+ORDER BY sorts the result set (ASC or DESC) and can evaluate multiple fields sequentially.
+
+\textbf{Common mistakes:} Using WHERE instead of HAVING to filter aggregated metrics.
+\textbf{Quick recap:} WHERE filters rows, GROUP BY aggregates rows, HAVING filters aggregations.
+\textbf{Practice question:} How do you filter a dataset to show only departments with more than 10 employees?
+\textit{Answer:} \texttt{GROUP BY department HAVING COUNT(employee\_id) > 10;}
+
+\section{Aggregation and Arithmetics}
+\textbf{Learning goals:} Compute numerical statistics and perform column math.
+\textbf{Prerequisites:} Chapter 1.
+\textbf{Key terms:} Aggregation, Arithmetic Operators, Rounding.
+
+\subsection{Basic Aggregation Functions}
+Aggregate functions summarize groups of rows into single values. They are often aliased for readability, though aliases are optional.
+\begin{itemize}
+    \item COUNT(...): Counts records with non-null values in a field.
+    \item COUNT(*): Counts all records, including nulls.
+    \item COUNT(DISTINCT ...): Counts unique values.
+    \item AVG(), SUM(), MAX(), MIN(): Standard mathematical aggregations. COUNT, MIN, and MAX work on non-numerical data.
+\end{itemize}
+
+\begin{verbatim}
+SELECT 
+    COUNT(*) AS total_rows, 
+    COUNT(DISTINCT category) AS unique_categories,
+    AVG(price) AS average_price
+FROM inventory;
+\end{verbatim}
+Output: Returns the total count, number of unique categories, and average price.
+
+\subsection{Mathematical Operators and Rounding}
+Arithmetic operations include + - * /. Integer division requires decimals (e.g., 3.0/2.0) to avoid truncation. ROUND() accepts negative parameters to round to the nearest 10, 100, etc., and omitting the second parameter rounds to a whole number.
+
+\begin{verbatim}
+SELECT ROUND(AVG(price), 2) AS avg_price FROM products;
+\end{verbatim}
+Output: The average price rounded to two decimal places.
+
+\textbf{Common mistakes:} Dividing two integers and expecting a float result.
+\textbf{Quick recap:} Use explicit float values for exact division; aggregate functions ignore nulls except COUNT(*).
+\textbf{Practice question:} How do you find the total number of unique countries in a table?
+\textit{Answer:} \texttt{SELECT COUNT(DISTINCT country) FROM table\_name;}
+
+\part{Data Types and Manipulation}
+
+\section{Data Types}
+\textbf{Learning goals:} Identify and query standard database column types.
+\textbf{Prerequisites:} None.
+\textbf{Key terms:} VARCHAR, TIMESTAMP, INTERVAL, ARRAY, ENUM.
+
+\subsection{Text, Numeric, and Array Data Types}
+Text types include CHAR, VARCHAR, and TEXT. Numeric types include INT and DECIMAL. Arrays allow storing lists (e.g., int[] or text[][]). PostgreSQL array indexes start at 1. Arrays can be searched using ANY() or the @> match operator.
+
+\begin{verbatim}
+SELECT name, scores FROM students WHERE 90 = ANY(scores);
+\end{verbatim}
+Output: Returns names and score arrays for students who have at least one score of 90.
+
+\subsection{Date, Time, and Timestamp Types}
+Dates use ISO 8601 (yyyy-mm-dd). TIMESTAMP includes date and time. TIME stores time without timezone by default. INTERVAL stores time durations.
+
+\subsection{User-Defined Types}
+Enumerated types (ENUM) define static, custom categorical lists.
+
+\begin{verbatim}
+CREATE TYPE dayofweek AS ENUM ('Monday', 'Tuesday');
+\end{verbatim}
+Output: Creates a custom type restricting column values to the defined days.
+
+\subsection{Querying Information Schema}
+Extract table metadata using INFORMATION\_SCHEMA.COLUMNS or pg\_type.
+
+\begin{verbatim}
+SELECT column_name, data_type 
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE table_name = 'film';
+\end{verbatim}
+Output: Returns column names and their corresponding data types.
+
+\subsection{JSON and Semi-Structured Data}
+PostgreSQL's JSONB type stores binary-encoded JSON, supporting indexing and faster processing. Extraction operators: -$>$ (returns JSON object) and -$>$$>$ (returns text). Search using the containment operator @$>$.
+
+\begin{verbatim}
+SELECT metadata->>'browser' AS browser
+FROM web_logs
+WHERE metadata @> '{"os": "Linux"}';
+\end{verbatim}
+Output: Extracts the 'browser' field from logs where the 'os' is 'Linux'.
+
+\textbf{Common mistakes:} Zero-indexing PostgreSQL arrays, using -$>$ when text output (-$>$$>$) is required for comparison.
+\textbf{Quick recap:} Arrays use 1-based indexing; JSONB is the preferred format for semi-structured data; metadata is accessible via INFORMATION\_SCHEMA.
+\textbf{Practice question:} How do you extract a nested 'city' value from a JSONB column 'address' as text?
+\textit{Answer:} \texttt{address->'location'->>'city'}
+
+\section{String and Character Manipulation}
+\textbf{Learning goals:} Modify, parse, and format string data.
+\textbf{Prerequisites:} Chapter 3.
+\textbf{Key terms:} Concatenation, Substring, Padding.
+
+\subsection{Concatenation and Case Modification}
+Concatenate strings using || or CONCAT(). Cast cases using UPPER(), LOWER(), or INITCAP() (title case).
+
+\subsection{Parsing and Substrings}
+Extract segments using LEFT(string, length) or RIGHT(string, length). Find index positions using POSITION('char' IN string) or STRPOS(string, 'char'). SUBSTRING(source, start, length) extracts characters. Length is checked via CHAR\_LENGTH() or LENGTH().
+
+\subsection{Trimming, Padding, and Replacing}
+TRIM() removes leading, trailing, or both characters (defaults to blank space). LPAD() and RPAD() pad strings with specific characters to reach a defined length, truncating if the target length is smaller. REPLACE() swaps substrings. REVERSE() reverses string characters.
+
+\begin{verbatim}
+SELECT LPAD('padded', 10, '#');
+\end{verbatim}
+Output: \texttt{\#\#\#\#padded}.
+
+\textbf{Common mistakes:} Confusing POSITION output with 0-indexed languages.
+\textbf{Quick recap:} String functions allow extraction, padding, and case manipulation directly in the SELECT clause.
+\textbf{Practice question:} Extract the first 3 characters of a column code.
+\textit{Answer:} \texttt{SELECT LEFT(code, 3) FROM table\_name;}
+
+\section{Time Data Manipulation}
+\textbf{Learning goals:} Perform arithmetic and extraction on timestamps.
+\textbf{Prerequisites:} Chapter 3.
+\textbf{Key terms:} INTERVAL, EXTRACT, DATE\_TRUNC.
+
+\subsection{Date and Time Arithmetic}
+Subtracting dates yields an integer representing days. Adding an integer to a date defaults to adding days. Subtracting timestamps yields an INTERVAL. AGE() calculates periods between timestamps. INTERVAL types can be mathematically manipulated.
+
+\begin{verbatim}
+SELECT 
+    rental_date + INTERVAL '3 days' AS due_date,
+    AGE(return_date, rental_date) AS rental_duration
+FROM rentals;
+\end{verbatim}
+Output: Returns the due date (3 days later) and the total duration of the rental.
+
+\subsection{Extracting and Truncating Time Data}
+EXTRACT(field FROM source) and DATE\_PART('field', source) retrieve sub-fields like quarter, year, or dow (day of week). DATE\_TRUNC('field', timestamp) rounds down a timestamp to the specified precision.
+
+\begin{verbatim}
+SELECT DATE_TRUNC('month', TIMESTAMP '2005-05-21 15:30:30');
+\end{verbatim}
+Output: \texttt{2005-05-01 00:00:00}.
+
+\subsection{Current Date and Time Functions}
+NOW() returns a timestamp with microsecond precision and timezone. CURRENT\_TIMESTAMP(precision) acts similarly. CURRENT\_DATE and CURRENT\_TIME provide lower precision alternatives. Cast without timezone using NOW()::timestamp.
+
+\textbf{Common mistakes:} Using standard subtraction on timestamps and expecting an integer.
+\textbf{Quick recap:} EXTRACT gets a number out of a date; DATE\_TRUNC resets a date to the start of a specific period.
+\textbf{Practice question:} Get the current year as an integer.
+\textit{Answer:} \texttt{SELECT EXTRACT(year FROM CURRENT\_DATE);}
+
+\section{Advanced Searching and Extensions}
+\textbf{Learning goals:} Perform fuzzy and full-text searches.
+\textbf{Prerequisites:} Chapter 4.
+\textbf{Key terms:} tsvector, pg\_trgm, Levenshtein.
+
+\subsection{Pattern Matching}
+LIKE is case-sensitive, using \% for zero/multiple characters and \_ for exactly one character. NOT LIKE reverses this.
+
+\subsection{Full-Text Search}
+Converts text into a tsvector (a sorted list of normalized word variants called lexemes). to\_tsvector and to\_tsquery are compared using the @@ match operator, which is case-insensitive.
+
+\begin{verbatim}
+SELECT title FROM film WHERE to_tsvector(title) @@ to_tsquery('elf');
+\end{verbatim}
+Output: Titles containing the word "elf" regardless of casing.
+
+\subsection{PostgreSQL Extensions}
+Extensions like PostGIS, PostPic, fuzzystrmatch, and pg\_trgm expand capabilities.
+\begin{itemize}
+    \item Levenshtein(str1, str2) calculates the edit distance between strings.
+    \item similarity(str1, str2) uses trigrams (3 consecutive characters) to score similarity from 0 to 1.
+\end{itemize}
+
+\textbf{Common mistakes:} Using LIKE for complex text searches instead of full-text vectors.
+\textbf{Quick recap:} LIKE is basic pattern matching; tsvector enables fast, robust textual search.
+\textbf{Practice question:} How do you query installed extensions?
+\textit{Answer:} \texttt{SELECT extname FROM pg\_extension;}
+
+\part{Combining and Structuring Data}
+
+\section{Joins}
+\textbf{Learning goals:} Merge multiple tables horizontally.
+\textbf{Prerequisites:} Chapter 1.
+\textbf{Key terms:} INNER, OUTER, CROSS, USING.
+
+\subsection{Standard Joins}
+\begin{itemize}
+    \item \textbf{INNER JOIN}: Returns records matching the condition in both tables. USING(column\_name) replaces ON if fields are identical.
+    \item \textbf{LEFT (OUTER) JOIN}: Returns all left table records and matching right table records; missing matches are null.
+    \item \textbf{RIGHT (OUTER) JOIN}: Reverses LEFT JOIN logic.
+    \item \textbf{FULL (OUTER) JOIN}: Combines LEFT and RIGHT joins.
+\end{itemize}
+
+\begin{verbatim}
+SELECT p1.country, p2.continent 
+FROM presidents AS p1 
+INNER JOIN prime_ministers AS p2 
+ON p1.country = p2.country;
+\end{verbatim}
+Output: Data for countries possessing both a president and prime minister.
+
+\subsection{CROSS JOIN and Self Joins}
+CROSS JOIN creates all possible combinations between two tables without an ON or USING clause. Self joins connect a table to itself, requiring aliases.
+
+\subsection{Semi and Anti Joins}
+\begin{itemize}
+    \item \textbf{Semi join}: Filters left table records when a match exists in the right table, commonly via WHERE EXISTS (...) or WHERE ... IN (subquery).
+    \item \textbf{Anti join}: Filters left table records when no match exists in the right table, typically via WHERE NOT EXISTS (...) or LEFT JOIN ... WHERE right\_table.id IS NULL.
+\end{itemize}
+
+\subsection{Chaining Multiple Joins}
+Multiple joins sequentially link tables, potentially utilizing AND within the ON clause for multiple conditions.
+
+\textbf{Common mistakes:} Forgetting aliases in a self join.
+\textbf{Quick recap:} Joins scale columns horizontally; semi/anti joins strictly act as filters without adding columns.
+\textbf{Practice question:} Create a Cartesian product of table A and B.
+\textit{Answer:} \texttt{SELECT * FROM A CROSS JOIN B;}
+
+\section{Set Theory}
+\textbf{Learning goals:} Merge result sets vertically.
+\textbf{Prerequisites:} Chapter 1.
+\textbf{Key terms:} UNION, INTERSECT, EXCEPT.
+
+\subsection{UNION and UNION ALL}
+Stacks fields vertically; requires the same number of columns and data types. UNION returns unique records; UNION ALL includes duplicates. The resulting column names are inherited from the left query. Requires no join field.
+
+\begin{verbatim}
+SELECT name FROM customers
+UNION
+SELECT name FROM suppliers;
+\end{verbatim}
+Output: A combined list of unique names from both customers and suppliers.
+
+\subsection{INTERSECT and EXCEPT}
+\begin{itemize}
+    \item \textbf{INTERSECT}: Returns records existing in both result sets, omitting duplicates.
+    \item \textbf{EXCEPT}: Retains only left table records absent from the right table. The entire record must match.
+\end{itemize}
+
+\textbf{Common mistakes:} Trying to UNION tables with mismatched column structures.
+\textbf{Quick recap:} Joins combine horizontally; Set operators stack vertically.
+\textbf{Practice question:} How do you stack query results while keeping duplicates?
+\textit{Answer:} \texttt{UNION ALL}.
+
+\section{Conditional Logic}
+\textbf{Learning goals:} Create derived columns using logic statements.
+\textbf{Prerequisites:} Chapter 1.
+\textbf{Key terms:} CASE, WHEN, THEN, ELSE.
+
+\subsection{CASE WHEN, THEN, ELSE, END}
+Evaluates to one new column. Requires END and usually an alias. If ELSE is omitted, unmatched conditions return null. Multiple conditions can use AND inside the WHEN clause.
+
+\begin{verbatim}
+SELECT CASE 
+    WHEN x = 1 THEN 'a' 
+    WHEN x = 2 THEN 'b' 
+    ELSE 'C' 
+END AS new_column;
+\end{verbatim}
+Output: Generates a column mapping 1 to 'a', 2 to 'b', and all others to 'C'.
+
+\subsection{Categorization, Filtering, and Aggregating}
+CASE statements inside aggregate functions selectively filter data for counts or sums.
+
+\begin{verbatim}
+SELECT season, COUNT(CASE WHEN home_goal > away_goal THEN 1 END) AS home_wins 
+FROM match 
+GROUP BY season;
+\end{verbatim}
+Output: Returns the number of home wins per season.
+
+\textbf{Common mistakes:} Forgetting the END keyword.
+\textbf{Quick recap:} CASE functions as an IF-THEN-ELSE logical structure directly inside SELECT or aggregation blocks.
+\textbf{Practice question:} Assign 'Adult' if age >= 18, else 'Minor'.
+\textit{Answer:} \texttt{CASE WHEN age >= 18 THEN 'Adult' ELSE 'Minor' END}
+
+\section{Subqueries and Transformations}
+\textbf{Learning goals:} Nest queries for complex filtering and structure.
+\textbf{Prerequisites:} Chapters 1, 7.
+\textbf{Key terms:} Subquery, Correlated, CTE.
+
+\subsection{The EXISTS Operator}
+The EXISTS operator evaluates whether a subquery returns any records, acting as a boolean filter.
+
+\subsection{Subqueries in WHERE, FROM, and SELECT}
+\begin{itemize}
+    \item \textbf{WHERE}: Returns scalars, lists, or tables for filtering.
+    \item \textbf{FROM}: Restructures data and allows aggregations of aggregations. Requires an alias.
+    \item \textbf{SELECT}: Must return a single value. Processes before main query.
+\end{itemize}
+
+\subsection{Correlated vs. Nested Subqueries}
+\begin{itemize}
+    \item \textbf{Nested}: Uncorrelated subqueries execute independently.
+    \item \textbf{Correlated}: Reference values from the outer query. Re-runs for every row generated by the main query, resulting in high processing times.
+\end{itemize}
+
+\subsection{Common Table Expressions (WITH)}
+CTEs organize queries sequentially. They can reference earlier CTEs, and recursive CTEs can reference themselves. They are defined with the WITH clause and may be materialized or inlined depending on the SQL engine and query plan.
+
+\begin{verbatim}
+WITH s1 AS (
+    SELECT id FROM match WHERE home_goal >= 10
+) 
+SELECT COUNT(id) FROM s1;
+\end{verbatim}
+Output: Defines a temporary table s1 holding matches with 10+ home goals, then counts them.
+
+\subsection{Strategic Selection}
+\begin{itemize}
+    \item \textbf{Joins}: Simple combinations/aggregations.
+    \item \textbf{Correlated Subqueries}: Match subqueries to tables while avoiding join limits.
+    \item \textbf{Nested Subqueries}: Multi-step mathematical transformations.
+    \item \textbf{CTEs}: Readability and sequential logic.
+\end{itemize}
+
+\textbf{Common mistakes:} Returning multiple rows in a SELECT subquery.
+\textbf{Quick recap:} Subqueries run internally to supply values; correlated subqueries depend on the outer query row-by-row; CTEs define clean, reusable temp results.
+\textbf{Practice question:} Which technique is best for creating a readable multi-step query?
+\textit{Answer:} CTEs.
+
+\part{Window Functions and Advanced Aggregation}
+
+\section{Window Function Fundamentals}
+\textbf{Learning goals:} Perform operations across related rows without collapsing them.
+\textbf{Prerequisites:} Chapter 2, 10.
+\textbf{Key terms:} OVER, PARTITION BY, Fetch, Rank.
+
+\subsection{Anatomy of a Window Function}
+Window functions compute over a set of rows while keeping all rows in the output. Processed after standard queries except ORDER BY. Syntax: FUNCTION\_NAME() OVER (PARTITION BY ... ORDER BY ...).
+\begin{itemize}
+    \item \textbf{PARTITION BY}: Resets the function operation across unique column values.
+    \item \textbf{ORDER BY}: Sorts the window locally.
+\end{itemize}
+
+\begin{verbatim}
+SELECT 
+    name, department, salary,
+    AVG(salary) OVER(PARTITION BY department) AS dept_avg
+FROM employees;
+\end{verbatim}
+Output: Shows each employee alongside the average salary of their specific department.
+
+\subsection{Fetching Values}
+\begin{itemize}
+    \item \textbf{LAG(column, n) / LEAD(column, n)}: Returns value n rows before/after current row.
+    \item \textbf{FIRST\_VALUE(column) / LAST\_VALUE(column)}: Returns first/last value in partition. By default, the window ends at the current row.
+\end{itemize}
+
+\subsection{Ranking and Paging}
+\begin{itemize}
+    \item \textbf{ROW\_NUMBER()}: Assigns unique integers sequentially.
+    \item \textbf{RANK()}: Assigns identical numbers to ties, skipping subsequent ranks (e.g., 1, 2, 2, 4).
+    \item \textbf{DENSE\_RANK()}: Assigns identical numbers to ties without skipping (e.g., 1, 2, 2, 3).
+    \item \textbf{NTILE(n)}: Splits data into n approximately equal chunks (paging).
+\end{itemize}
+
+\begin{verbatim}
+SELECT 
+    title, score,
+    DENSE_RANK() OVER(ORDER BY score DESC) AS rank
+FROM games;
+\end{verbatim}
+Output: Ranks games by score, with tied scores receiving the same rank and no gaps in the sequence.
+
+\textbf{Common mistakes:} Forgetting that LAST\_VALUE ends at the current row unless bounded.
+\textbf{Quick recap:} Window functions analyze a group of rows related to the current row without grouping the final output.
+\textbf{Practice question:} How to assign a strictly unique row ID regardless of ties?
+\textit{Answer:} \texttt{ROW\_NUMBER()}.
+
+\section{Sliding Windows}
+\textbf{Learning goals:} Define bounds for running totals and moving metrics.
+\textbf{Prerequisites:} Chapter 11.
+\textbf{Key terms:} ROWS BETWEEN, RANGE BETWEEN, PRECEDING.
+
+\subsection{Defining Frames}
+Defines calculations relative to current row within OVER().
+\begin{itemize}
+    \item \textbf{ROWS BETWEEN}: Evaluates strictly by physical row placement.
+    \item \textbf{RANGE BETWEEN}: Treats tied values in the ORDER BY clause as a single logical entity.
+\end{itemize}
+
+\subsection{Frame Keywords}
+PRECEDING, FOLLOWING, UNBOUNDED PRECEDING, UNBOUNDED FOLLOWING, CURRENT ROW.
+
+\begin{verbatim}
+SELECT 
+SUM(home_goal) OVER(
+    ORDER BY date 
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+) AS running_total
+FROM football_matches;
+\end{verbatim}
+Output: Computes a cumulative sum from the first row to the current.
+
+\textbf{Common mistakes:} Confusing ROWS and RANGE when handling duplicate sorting keys.
+\textbf{Quick recap:} Frames restrict window operations to specific subsets relative to the current row.
+\textbf{Practice question:} Frame declaration for the entire partition?
+\textit{Answer:} \texttt{ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING}.
+
+\section{Advanced Grouping and Pivoting}
+\textbf{Learning goals:} Generate multi-dimensional rollups and pivot tables.
+\textbf{Prerequisites:} Chapter 2, 11.
+\textbf{Key terms:} ROLLUP, CUBE, CROSSTAB, COALESCE.
+
+\subsection{Hierarchical Aggregation}
+ROLLUP is a GROUP BY subclause generating hierarchical extra rows for group-level aggregations. ROLLUP(Country, Medal) yields Country-level totals and a grand total.
+
+\begin{verbatim}
+SELECT country, city, SUM(sales)
+FROM global_sales
+GROUP BY ROLLUP(country, city);
+\end{verbatim}
+Output: Returns sales by city, country totals, and a grand total.
+
+\subsection{Non-Hierarchical Aggregation}
+CUBE generates all possible group-level aggregations. CUBE(Country, Medal) creates Country-level, Medal-level, and grand totals.
+
+\subsection{Handling Nulls}
+COALESCE() takes a list and returns the first non-null value from left to right. Essential for replacing nulls generated by ROLLUP or outer joins.
+
+\subsection{Alternative Null Handling}
+IFNULL and ISNULL function similarly to COALESCE to replace null values, depending on the specific SQL dialect.
+
+\subsection{Pivoting Data}
+The tablefunc extension provides CROSSTAB, moving row data into columns.
+
+\begin{verbatim}
+SELECT * FROM CROSSTAB($$source_sql$$) 
+AS ct(col1 type1, col2 type2);
+\end{verbatim}
+Output: Restructures vertical data horizontally.
+
+\subsection{Data Compression}
+STRING\_AGG(column\_name, 'separator') aggregates string values into a single delimited string per group.
+
+\textbf{Common mistakes:} Using CUBE on continuous dimensions causing combinatorial explosions.
+\textbf{Quick recap:} ROLLUP totals chronologically/hierarchically; CUBE totals all dimensions.
+\textbf{Practice question:} Replace nulls in commission with 0.
+\textit{Answer:} \texttt{COALESCE(commission, 0)}.
+
+\part{Database Design and Storage Architecture}
+
+\section{Data Structures and DBMS Types}
+\textbf{Learning goals:} Understand data formatting paradigms and their respective management systems.
+\textbf{Key terms:} Structured, Unstructured, Semi-structured, RDBMS, NoSQL.
+
+\subsection{Data Formats}
+Structured data adheres to a rigid schema, such as relational database tables.
+Semi-structured data utilizes self-describing structures, such as JSON or XML.
+Unstructured data operates without a larger schema and constitutes the majority of global data.
+
+\subsection{Database Management Systems (DBMS)}
+SQL Database Management Systems (RDBMS) process structured, consistent data.
+NoSQL Database Management Systems manage rapid growth and schema-less data. They scale via document stores, key-value stores, columnar databases, and graph databases.
+
+\section{OLTP vs. OLAP}
+\textbf{Learning goals:} Differentiate between transactional and analytical processing architectures.
+\textbf{Key terms:} OLTP, OLAP, Data Warehouse, Data Lake.
+
+\subsection{Processing Paradigms}
+Online Transaction Processing (OLTP) systems execute frequent updates to support daily transactions, utilizing application-oriented, highly normalized designs.
+Online Analytical Processing (OLAP) systems execute complex aggregations on historical data, utilizing subject-oriented, denormalized designs.
+
+\subsection{Storage Architectures}
+Data Warehouses store archived, structured data optimized for OLAP reading.
+Data Lakes store petabytes of structured and unstructured data using schema-on-read methodology.
+Data integration consolidates diverse source formats into a unified model through ETL (Extract, Transform, Load) or ELT pipelines.
+
+\section{Normalization}
+\textbf{Learning goals:} Apply normalization rules to eliminate data anomalies.
+\textbf{Key terms:} 1NF, 2NF, 3NF, Anomaly.
+
+\subsection{Normal Forms}
+Normalization fragments tables to reduce data redundancy and increase integrity.
+First Normal Form (1NF) mandates strictly unique records and a single value per cell.
+Second Normal Form (2NF) requires 1NF compliance and dictates that non-key columns depend entirely on all parts of a composite primary key.
+Third Normal Form (3NF) requires 2NF compliance and eliminates transitive dependencies among non-key columns.
+
+\subsection{Anomalies}
+Failing to normalize generates update, insertion, and deletion anomalies.
+
+\section{Dimensional Modeling}
+\textbf{Learning goals:} Design schemas optimized for analytical querying.
+\textbf{Key terms:} Fact Table, Dimension Table, Star Schema, Snowflake Schema.
+
+\subsection{Core Components}
+Dimensional modeling adapts relational frameworks for data warehouse OLAP queries.
+Fact tables record frequently changing metric events and connect to dimensions via foreign keys.
+Dimension tables store static or slowly changing descriptive attributes.
+
+\subsection{Schema Topologies}
+The star schema organizes one denormalized dimension table directly to a central fact table.
+The snowflake schema normalizes the dimension tables into sub-dimensions.
+
+\part{Database Administration}
+
+\section{Materialized Views}
+\textbf{Learning goals:} Optimize read speeds for complex queries.
+\textbf{Key terms:} Materialized View, Rematerialization.
+
+Materialized views physically write query results to storage rather than executing the query upon each access.
+They demand scheduled or manual rematerialization to reflect underlying data changes.
+They optimize read-intensive OLAP environments and long-running queries.
+
+\section{Roles and Access Control}
+\textbf{Learning goals:} Manage database security and user permissions.
+\textbf{Key terms:} Role, GRANT, REVOKE.
+
+Database roles function as users or groups to manage access permissions across a cluster.
+Specific privileges are assigned using the GRANT command and removed using the REVOKE command.
+
+\section{Partitioning}
+\textbf{Learning goals:} Divide large tables to improve maintainability and query performance.
+\textbf{Prerequisites:} Chapter 10, 18.
+\textbf{Key terms:} Vertical Partitioning, Horizontal Partitioning.
+
+Vertical partitioning splits a table's columns to group frequently accessed data.
+Horizontal partitioning divides rows across multiple tables by specified ranges or lists.
+Partitioning ensures indices for heavy-use segments fit in memory, though retrofitting existing tables requires high operational overhead.
+
+\part{Data Science and Analytics}
+
+\section{SQL for Feature Engineering}
+\textbf{Learning goals:} Create model-ready features and perform statistical analysis.
+\textbf{Prerequisites:} Chapter 2, 11, 12.
+\textbf{Key terms:} Z-Score, Binning, One-Hot Encoding, Feature Scaling.
+
+\subsection{Statistical Descriptive Features}
+Beyond basic averages, Data Science requires measures of dispersion. STDDEV() and VARIANCE() provide insight into data spread. Percentiles help identify outliers or describe distributions.
+
+\begin{verbatim}
+SELECT 
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY income) AS median_income,
+    STDDEV(income) AS income_stddev
+FROM users;
+\end{verbatim}
+Output: Returns the median and standard deviation of the income column.
+
+\subsection{Binning and Discretization}
+Transforming continuous variables into categorical "bins" is essential for certain models. This is typically achieved via CASE statements (manual bins) or NTILE() (equal-frequency bins).
+
+\subsection{One-Hot Encoding}
+Categorical variables must often be converted into binary flags. This is performed using CASE statements inside aggregations to create a "pivot" effect.
+
+\begin{verbatim}
+SELECT 
+    user_id,
+    MAX(CASE WHEN color = 'Red' THEN 1 ELSE 0 END) AS is_red,
+    MAX(CASE WHEN color = 'Blue' THEN 1 ELSE 0 END) AS is_blue
+FROM preferences
+GROUP BY user_id;
+\end{verbatim}
+Output: A table with binary columns for each color category.
+
+\subsection{Feature Scaling and Normalization}
+Scaling values to a specific range (like 0 to 1) or calculating Z-scores (distance from mean in standard deviations) ensures that features with large ranges don't dominate models.
+
+\begin{verbatim}
+SELECT 
+    val,
+    (val - MIN(val) OVER()) / (MAX(val) OVER() - MIN(val) OVER()) AS min_max_scaled
+FROM measurements;
+\end{verbatim}
+Output: Returns values scaled between 0 and 1.
+
+\subsection{Random Sampling for Training}
+To reduce data volume and explore large datasets, Data Scientists use sampling. TABLESAMPLE or RANDOM() can create random subsets, but representativeness depends on the sampling method and the data.
+
+\textbf{Common mistakes:} Forgetting to handle NULLs before scaling, which can return NULL results for the entire feature.
+\textbf{Quick recap:} Feature engineering in SQL shifts the computational load from Python/R to the database, enabling the processing of larger datasets.
+\textbf{Practice question:} How do you calculate a Z-score for a column height?
+\textit{Answer:} \texttt{(height - AVG(height) OVER()) / STDDEV(height) OVER()}
+
+\section{Analytics Cookbook (Business Intelligence Patterns)}
+\textbf{Learning goals:} Apply complex SQL patterns to solve real-world business and data science problems.
+\textbf{Prerequisites:} Chapter 1, 5, 12, 21.
+\textbf{Key terms:} Retention, Cohort Analysis, YoY Growth, Cumulative Sum.
+
+\subsection{Retention and Cohort Analysis}
+Cohorts are groups of users sharing a common characteristic (usually their signup month). Analyzing their behavior over time helps identify churn patterns.
+\begin{verbatim}
+-- Get the first signup month for each user
+WITH first_order AS (
+    SELECT user_id, MIN(DATE_TRUNC('month', order_date)) AS cohort_month
+    FROM orders GROUP BY 1
+)
+SELECT 
+    f.cohort_month,
+    DATE_TRUNC('month', o.order_date) AS active_month,
+    COUNT(DISTINCT o.user_id) AS active_users
+FROM orders o
+JOIN first_order f ON o.user_id = f.user_id
+GROUP BY 1, 2 ORDER BY 1, 2;
+\end{verbatim}
+
+\subsection{Running Totals and Cumulative Metrics}
+Running totals track progress over time (e.g., total sales to date). This is achieved using window functions with the default frame (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW).
+\begin{verbatim}
+SELECT 
+    date, 
+    daily_revenue,
+    SUM(daily_revenue) OVER (ORDER BY date) AS cumulative_revenue
+FROM daily_sales;
+\end{verbatim}
+
+\subsection{Year-over-Year (YoY) Growth}
+Comparing current performance to the same period in the previous year is a staple of business reporting. LAG() with an offset of 12 (for monthly data) or 1 (for yearly data) is the standard approach.
+\begin{verbatim}
+WITH yearly_sales AS (
+    SELECT EXTRACT(year FROM date) AS year, SUM(revenue) AS revenue
+    FROM sales GROUP BY 1
+)
+SELECT 
+    year, 
+    revenue,
+    LAG(revenue) OVER (ORDER BY year) AS prev_year_revenue,
+    (revenue - LAG(revenue) OVER (ORDER BY year)) / LAG(revenue) OVER (ORDER BY year) AS growth_pct
+FROM yearly_sales;
+\end{verbatim}
+
+\subsection{Manual Pivot Tables (Long to Wide)}
+While some databases have a PIVOT command, the most portable way to pivot data is using conditional aggregation (SUM(CASE...)).
+\begin{verbatim}
+SELECT 
+    region,
+    SUM(CASE WHEN quarter = 1 THEN revenue ELSE 0 END) AS q1_revenue,
+    SUM(CASE WHEN quarter = 2 THEN revenue ELSE 0 END) AS q2_revenue
+FROM regional_sales
+GROUP BY region;
+\end{verbatim}
+
+\textbf{Common mistakes:} Using DATE\_PART instead of DATE\_TRUNC for cohorts (losing the year context), forgetting to handle division by zero in growth calculations.
+\textbf{Quick recap:} Use LAG() for growth, SUM() OVER() for running totals, and CASE inside SUM() for pivoting.
+\textbf{Practice question:} How do you calculate a 7-day moving average of sales?
+\textit{Answer:} \texttt{AVG(sales) OVER(ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)}
+
+\end{document}

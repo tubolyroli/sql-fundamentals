@@ -1,5 +1,7 @@
 # SQL Fundamentals: Interactive Documentation
 
+**[🚀 View Live Demo](https://tubolyroli.github.io/sql-fundamentals/)**
+
 An interactive, searchable, and themeable documentation for SQL fundamentals, designed for students and data professionals.
 
 ## 🚀 Features

@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Fundamentals | Documentation</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+    <title>SQL Fundamentals</title>
+    <!-- Highlight.js for Syntax Highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
@@ -15,486 +12,191 @@
     
     <style>
         :root {
-            --accent-color: #0055ff;
-            --text-main: #1a1a1a;
-            --text-muted: #666;
-            --bg-body: #ffffff;
-            --bg-sidebar: rgba(249, 249, 249, 0.8);
-            --border-ui: #e5e5e5;
-            --callout-bg: #f0f4ff;
-            --card-bg: #ffffff;
-            --code-bg: #f5f7f9;
-            --inline-code-bg: #f0f0f0;
-            --inline-code-text: #d14;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        [data-theme="dark"] {
-            --text-main: #e0e0e0;
-            --text-muted: #aaa;
-            --bg-body: #121212;
-            --bg-sidebar: rgba(30, 30, 30, 0.8);
-            --border-ui: #333;
-            --callout-bg: #1a2236;
-            --card-bg: #1e1e1e;
-            --accent-color: #4da3ff;
-            --code-bg: #1e1e1e;
-            --inline-code-bg: #2d2d2d;
-            --inline-code-text: #ff79c6;
+            --primary-color: #337ab7;
+            --text-color: #333;
+            --bg-color: #fff;
+            --sidebar-bg: #f8f8f8;
+            --code-bg: #f5f5f5;
+            --border-color: #ddd;
+            --callout-bg: #f4f8fa;
+            --callout-border: #1b809e;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            line-height: 1.8;
-            color: var(--text-main);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
             margin: 0;
             display: flex;
-            background-color: var(--bg-body);
-            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Dark Mode Toggle */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--bg-sidebar);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-ui);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            z-index: 1000;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        /* --- Dark Mode Syntax Overrides --- */
-        [data-theme="dark"] .hljs { background: transparent !important; color: #f8f8f2 !important; }
-        [data-theme="dark"] .hljs-keyword { color: #ff79c6 !important; }
-        [data-theme="dark"] .hljs-string { color: #f1fa8c !important; }
-        [data-theme="dark"] .hljs-number { color: #bd93f9 !important; }
-        [data-theme="dark"] .hljs-operator { color: #ff79c6 !important; }
-        [data-theme="dark"] .hljs-comment { color: #6272a4 !important; }
-        [data-theme="dark"] .hljs-built_in { color: #8be9fd !important; }
-
-        /* --- Sidebar / Systematic Navigation --- */
+        /* Sidebar / TOC */
         #sidebar {
-            width: 280px;
+            width: 250px;
             height: 100vh;
             position: fixed;
-            background: var(--bg-sidebar);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid var(--border-ui);
-            padding: 40px 24px;
-            overflow-y: auto;
-            font-size: 0.85rem;
-            transition: background 0.3s, border 0.3s;
-            z-index: 100;
-        }
-
-        #sidebar h2 { 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            letter-spacing: 0.1em; 
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        #sidebar ul { list-style: none; padding: 0; margin: 0; }
-        #sidebar .toc-part { 
-            font-weight: 700; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 24px; 
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-ui);
-            color: var(--text-main);
-            cursor: pointer;
-        }
-        #sidebar .toc-section { padding-left: 0; margin-top: 8px; }
-        #sidebar a { text-decoration: none; color: var(--text-muted); transition: color 0.2s; display: block; padding: 4px 0; }
-        #sidebar a:hover, #sidebar a.active { color: var(--accent-color); }
-        #sidebar a.active { font-weight: 700; border-left: 2px solid var(--accent-color); padding-left: 8px; }
-
-        /* Dynamic Subsections */
-        .toc-subsection {
-            list-style: none;
-            padding-left: 20px !important;
-            margin-top: 4px;
-            font-size: 0.8rem;
-            border-left: 1px solid var(--border-ui);
-            margin-left: 10px;
-        }
-        .toc-subsection li { margin-bottom: 4px; }
-        .toc-subsection a { color: var(--text-muted); opacity: 0.8; }
-        .toc-subsection a:hover, .toc-subsection a.active { opacity: 1; color: var(--accent-color); font-weight: 600; }
-
-        /* --- Sidebar Search --- */
-        .search-container {
-            margin-bottom: 30px;
-            position: relative;
-        }
-
-        #sidebar-search {
-            width: 100%;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-ui);
-            background: var(--bg-body);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        #sidebar-search:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
-        }
-
-        #search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            border: 1px solid var(--border-ui);
-            border-radius: 8px;
-            margin-top: 8px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1001;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: none;
-        }
-
-        #search-results .result-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-ui);
-            transition: background 0.2s;
-        }
-
-        #search-results .result-item:last-child {
-            border-bottom: none;
-        }
-
-        #search-results .result-item:hover {
-            background: var(--bg-sidebar);
-        }
-
-        #search-results .result-title {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        #search-results .result-subtitle {
-            font-size: 0.75rem;
-            color: var(--accent-color);
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        #search-results .result-snippet {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-            display: block;
-        }
-
-        #search-results mark {
-            background: rgba(255, 235, 59, 0.4);
-            color: inherit;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-        [data-theme="dark"] #search-results mark {
-            background: rgba(255, 235, 59, 0.2);
-            color: #fff;
-        }
-
-        /* --- Main Content Grid --- */
-        #content {
-            margin-left: 280px;
-            flex-grow: 1;
-            max-width: 900px;
-            padding: 40px 100px;
-        }
-
-        section {
-            background: var(--card-bg);
-            padding: 0 20px 20px 20px;
-            margin-bottom: 40px;
-            border-radius: 8px;
-            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-            scroll-margin-top: 0; /* Align with sticky top: 0 */
-        }
-
-        section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        }
-
-        [data-theme="dark"] section:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
-
-        header { margin-bottom: 40px; }
-        header h1 { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; margin: 0; color: var(--text-main); }
-        .meta { font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-        /* --- Part & Section Headers --- */
-        .part-header {
-            background-color: var(--bg-sidebar);
-            border-left: 4px solid var(--accent-color);
-            padding: 16px 24px;
-            margin: 40px 0 10px 0;
-            border-radius: 4px;
-        }
-
-        .part-header h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0 !important;
-        }
-
-        .section-header-container {
-            position: sticky;
-            top: 0;
-            background: var(--bg-body);
-            z-index: 10;
-            padding: 12px 0;
-            margin-top: 0; 
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid transparent;
-            transition: background 0.3s, border-bottom 0.3s;
-            height: 58px; /* Fixed height for predictable stacking */
-            box-sizing: border-box;
-        }
-
-        h3 { 
-            font-size: 1.75rem; 
-            font-weight: 700; 
-            margin: 0; 
-            line-height: 1.2; 
-            color: var(--text-main);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap; /* Prevent height increase from wrapping */
-        }
-
-        h4 { 
-            font-size: 1.15rem; 
-            font-weight: 600; 
-            margin: 25px 0 15px 0;
-            border-left: 3px solid var(--accent-color); 
-            padding: 8px 15px; 
-            background: var(--bg-body);
-            position: sticky;
-            top: 58px; /* Exactly below the h3 container */
-            z-index: 9;
-            color: var(--text-main);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-
-        .sub-anchor {
-            display: block;
-            height: 0;
-            width: 0;
-            visibility: hidden;
-            scroll-margin-top: 58px; /* Match sticky top for perfect anchor jumps */
-        }
-
-        /* --- Functional Elements --- */
-        .callout {
-            background: var(--callout-bg);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
             padding: 20px;
-            margin: 24px 0;
-            font-size: 0.95rem;
-            border-radius: 4px;
-            border-left: 5px solid #31708f;
-            color: #31708f;
-        }
-        .callout strong { color: #245269; font-weight: 600; }
-
-        .recap {
-            background: #dff0d8;
-            border: 1px solid var(--border-ui);
-            border-left: 5px solid #3c763d;
-            padding: 20px;
-            margin: 30px 0;
-            color: #3c763d;
-        }
-        .recap strong { color: #2b542c; }
-
-        #section-22 {
-            border: 1px solid #dcd6f7;
-            background-color: #faf9ff;
-        }
-        [data-theme="dark"] #section-22 { background-color: #1a1625; }
-
-        #section-22 .callout { border-left-color: #6f42c1; background-color: #f3e5f5; color: #4a148c; }
-        #section-22 .callout strong { color: #4a148c; }
-
-        code {
-            font-family: 'JetBrains Mono', monospace;
-            background: var(--inline-code-bg);
-            color: var(--inline-code-text);
-            padding: 2px 5px;
+            overflow-y: auto;
             font-size: 0.9em;
+        }
+
+        #sidebar h2 { font-size: 1.2em; margin-top: 0; color: var(--primary-color); }
+        #sidebar ul { list-style: none; padding: 0; }
+        #sidebar li { margin-bottom: 8px; }
+        #sidebar a { text-decoration: none; color: var(--text-color); }
+        #sidebar a:hover { color: var(--primary-color); }
+        #sidebar .toc-part { font-weight: bold; margin-top: 15px; display: block; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        #sidebar .toc-section { padding-left: 10px; }
+
+        /* Main Content */
+        #content {
+            margin-left: 290px;
+            max-width: 900px;
+            padding: 40px;
+        }
+
+        h1, h2, h3, h4 { color: #333; margin-top: 1.5em; }
+        h1 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .part-header {
+            background: #eee;
+            padding: 10px 20px;
+            margin-top: 2em;
             border-radius: 4px;
+        }
+
+        /* Callouts */
+        .callout {
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #eee;
+            border-left: 5px solid var(--callout-border);
+            border-radius: 3px;
+            background-color: var(--callout-bg);
+        }
+        .callout p { margin: 2px 0; }
+        .callout strong { color: var(--callout-border); }
+
+        /* Inline and Block Code */
+        code {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #f8f8f8;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: #d14; /* Standard inline code color */
         }
 
         pre {
-            position: relative;
-            margin: 20px 0 0 0;
-            border: 1px solid var(--border-ui);
-            border-radius: 6px 6px 0 0;
-            background: var(--code-bg);
+            margin-bottom: 0px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: var(--code-bg);
         }
-        pre code { display: block; padding: 20px !important; background: transparent !important; color: inherit; }
-        pre:hover .copy-btn { opacity: 1; }
 
-        .copy-btn {
-            position: absolute; top: 8px; right: 8px; padding: 4px 8px;
-            background: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; border-radius: 4px;
-            font-size: 11px; cursor: pointer; opacity: 0; transition: opacity 0.2s; z-index: 10;
+        pre code {
+            display: block;
+            padding: 15px !important;
+            background-color: transparent !important;
+            color: inherit !important;
+            border: none !important;
+            overflow-x: auto;
         }
-        .copy-btn.copied { background: #dff0d8; border-color: #d6e9c6; color: #3c763d; }
 
         .output {
-            background: var(--bg-sidebar);
-            border: 1px solid var(--border-ui);
-            border-top: none;
-            padding: 12px 20px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border-radius: 0 0 6px 6px;
+            margin-top: 0px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-top: 1px dashed #ddd;
             font-style: italic;
+            color: #666;
+            font-size: 0.85em;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
         }
 
-        /* --- Scrollspy & Completion --- */
-        .toc-section-wrapper { transition: max-height 0.3s ease-out, opacity 0.3s; overflow: hidden; }
-        .toc-section-wrapper.collapsed { max-height: 0; opacity: 0; }
-        .toc-part::after { content: '▾'; transition: transform 0.2s; }
-        .toc-part.collapsed::after { transform: rotate(-90deg); }
+        /* Practice / Recap */
+        .recap {
+            background: #fcf8e3;
+            border-left: 5px solid #8a6d3b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 3px;
+        }
 
-        .completion-checkbox { margin-right: 12px; cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent-color); }
-        section.completed { border-left: 6px solid #5cb85c !important; background-color: rgba(92, 184, 92, 0.05); }
-
-        /* --- Responsive Design --- */
-        @media (max-width: 1024px) { #content { padding: 40px; } }
+        /* Responsive */
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            #sidebar { width: 100%; height: auto; position: relative; border-right: none; }
+            #sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid var(--border-color); }
             #content { margin-left: 0; padding: 20px; }
-            header h1 { font-size: 2.5rem; }
         }
     </style>
 </head>
 <body>
 
 <nav id="sidebar">
-    <div class="search-container">
-        <input type="text" id="sidebar-search" placeholder="Search documentation..." autocomplete="off">
-        <div id="search-results"></div>
-    </div>
-    <h2>Table of Contents</h2>
+    <h2>Contents</h2>
     <ul>
-        <li><span class="toc-part">Part I. Foundational Structure</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-1">I.1. Query Execution</a></li>
-                    <li><a href="#section-2">I.2. Aggregation</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part I. Foundational Query Structure</span>
+            <ul>
+                <li class="toc-section"><a href="#section-1">I.1. Query Execution & Basic Clauses</a></li>
+                <li class="toc-section"><a href="#section-2">I.2. Aggregation and Arithmetics</a></li>
+            </ul>
         </li>
-        <li><span class="toc-part">Part II. Data Types</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-3">II.1. Data Types</a></li>
-                    <li><a href="#section-4">II.2. String Manipulation</a></li>
-                    <li><a href="#section-5">II.3. Time Manipulation</a></li>
-                    <li><a href="#section-6">II.4. Advanced Searching</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part II. Data Types and Manipulation</span>
+            <ul>
+                <li class="toc-section"><a href="#section-3">II.1. Data Types</a></li>
+                <li class="toc-section"><a href="#section-4">II.2. String Manipulation</a></li>
+                <li class="toc-section"><a href="#section-5">II.3. Time Data Manipulation</a></li>
+                <li class="toc-section"><a href="#section-6">II.4. Advanced Searching</a></li>
+            </ul>
         </li>
-        <li><span class="toc-part">Part III. Combining Data</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-7">III.1. Joins</a></li>
-                    <li><a href="#section-8">III.2. Set Theory</a></li>
-                    <li><a href="#section-9">III.3. Conditional Logic</a></li>
-                    <li><a href="#section-10">III.4. Subqueries & CTEs</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part III. Combining and Structuring Data</span>
+            <ul>
+                <li class="toc-section"><a href="#section-7">III.1. Joins</a></li>
+                <li class="toc-section"><a href="#section-8">III.2. Set Theory</a></li>
+                <li class="toc-section"><a href="#section-9">III.3. Conditional Logic</a></li>
+                <li class="toc-section"><a href="#section-10">III.4. Subqueries & CTEs</a></li>
+            </ul>
         </li>
-        <li><span class="toc-part">Part IV. Window Functions</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-11">IV.1. Fundamentals</a></li>
-                    <li><a href="#section-12">IV.2. Sliding Windows</a></li>
-                    <li><a href="#section-13">IV.3. Grouping & Pivoting</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part IV. Window Functions and Advanced Aggregation</span>
+            <ul>
+                <li class="toc-section"><a href="#section-11">IV.1. Window Function Fundamentals</a></li>
+                <li class="toc-section"><a href="#section-12">IV.2. Sliding Windows</a></li>
+                <li class="toc-section"><a href="#section-13">IV.3. Advanced Grouping & Pivoting</a></li>
+            </ul>
         </li>
-        <li><span class="toc-part">Part V. Database Design</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-14">V.1. Data Structures</a></li>
-                    <li><a href="#section-15">V.2. OLTP vs. OLAP</a></li>
-                    <li><a href="#section-16">V.3. Normalization</a></li>
-                    <li><a href="#section-17">V.4. Dimensional Modeling</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part V. Database Design and Storage Architecture</span>
+            <ul>
+                <li class="toc-section"><a href="#section-14">V.1. Data Structures</a></li>
+                <li class="toc-section"><a href="#section-15">V.2. OLTP vs. OLAP</a></li>
+                <li class="toc-section"><a href="#section-16">V.3. Normalization</a></li>
+                <li class="toc-section"><a href="#section-17">V.4. Dimensional Modeling</a></li>
+            </ul>
         </li>
-        <li><span class="toc-part">Part VI. Administration</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-18">VI.1. Materialized Views</a></li>
-                    <li><a href="#section-19">VI.2. Roles & Access</a></li>
-                    <li><a href="#section-20">VI.3. Partitioning</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part VI. Database Administration</span>
+            <ul>
+                <li class="toc-section"><a href="#section-18">VI.1. Materialized Views</a></li>
+                <li class="toc-section"><a href="#section-19">VI.2. Roles & Access</a></li>
+                <li class="toc-section"><a href="#section-20">VI.3. Partitioning</a></li>
+            </ul>
         </li>
-        <li><span class="toc-part">Part VII. Data Science</span>
-            <div class="toc-section-wrapper">
-                <ul class="toc-section">
-                    <li><a href="#section-21">VII.1. Feature Engineering</a></li>
-                    <li><a href="#section-22">VII.2. Analytics Cookbook</a></li>
-                </ul>
-            </div>
+        <li><span class="toc-part">Part VII. Data Science and Analytics</span>
+            <ul>
+                <li class="toc-section"><a href="#section-21">VII.1. SQL for Feature Engineering</a></li>
+                <li class="toc-section"><a href="#section-22">VII.2. Analytics Cookbook</a></li>
+            </ul>
         </li>
     </ul>
 </nav>
 
-<button class="theme-toggle" id="theme-toggle">
-    <span id="theme-icon">🌙</span>
-    <span id="theme-text">Dark Mode</span>
-</button>
-
 <main id="content">
-    <header>
-        <h1>SQL Fundamentals</h1>
-        <div class="meta">Author: Roland Tuboly</div>
-    </header>
+    <h1>SQL Fundamentals</h1>
+    <p><strong>Author:</strong> Roland Tuboly</p>
 
     <div class="part-header"><h2>Part I. Foundational Query Structure</h2></div>
 
@@ -606,28 +308,27 @@ WHERE 90 = ANY(scores);</code></pre>
         <p>Enumerated types (<code>ENUM</code>) define static, custom categorical lists.</p>
         <pre><code class="language-sql">CREATE TYPE dayofweek AS ENUM ('Monday', 'Tuesday');</code></pre>
         <div class="output">Output: Creates a custom type restricting column values to the defined days.</div>
-<h4>II.1.4. Querying Information Schema</h4>
-<p>Extract table metadata using <code>INFORMATION_SCHEMA.COLUMNS</code> or <code>pg_type</code>.</p>
-<pre><code class="language-sql">SELECT column_name, data_type 
+
+        <h4>II.1.4. Querying Information Schema</h4>
+        <p>Extract table metadata using <code>INFORMATION_SCHEMA.COLUMNS</code> or <code>pg_type</code>.</p>
+        <pre><code class="language-sql">SELECT column_name, data_type 
 FROM INFORMATION_SCHEMA.COLUMNS 
 WHERE table_name = 'film';</code></pre>
-<div class="output">Output: Returns column names and their corresponding data types.</div>
+        <div class="output">Output: Returns column names and their corresponding data types.</div>
 
-<h4>II.1.5. JSON and Semi-Structured Data</h4>
-<p>PostgreSQL's <code>JSONB</code> type stores binary-encoded JSON, supporting indexing and faster processing. Extraction operators: <code>-&gt;</code> (returns JSON object) and <code>-&gt;&gt;</code> (returns text). Search using the containment operator <code>@&gt;</code>.</p>
-<pre><code class="language-sql">SELECT metadata-&gt;&gt;'browser' AS browser
+        <h4>II.1.5. JSON and Semi-Structured Data</h4>
+        <p>PostgreSQL's <code>JSONB</code> type stores binary-encoded JSON, supporting indexing and faster processing. Extraction operators: <code>-&gt;</code> (returns JSON object) and <code>-&gt;&gt;</code> (returns text). Search using the containment operator <code>@&gt;</code>.</p>
+        <pre><code class="language-sql">SELECT metadata-&gt;&gt;'browser' AS browser
 FROM web_logs
 WHERE metadata @&gt; '{"os": "Linux"}';</code></pre>
-<div class="output">Output: Extracts the 'browser' field from logs where the 'os' is 'Linux'.</div>
+        <div class="output">Output: Extracts the 'browser' field from logs where the 'os' is 'Linux'.</div>
 
-<div class="recap">
-    <p><strong>Common mistakes:</strong> Zero-indexing PostgreSQL arrays, using <code>-&gt;</code> when text output (<code>-&gt;&gt;</code>) is required for comparison.</p>
-    <p><strong>Quick recap:</strong> Arrays use 1-based indexing; JSONB is the preferred format for semi-structured data; metadata is accessible via INFORMATION_SCHEMA.</p>
-    <p><strong>Practice question:</strong> How do you extract a nested 'city' value from a JSONB column 'address' as text?</p>
-    <p><em>Answer:</em> <code>address-&gt;'location'-&gt;&gt;'city'</code></p>
-    <p><strong>Practice question:</strong> How do you query the first element of an array column named scores?</p>
-    <p><em>Answer:</em> <code>SELECT scores[1] FROM table_name;</code></p>
-</div>
+        <div class="recap">
+            <p><strong>Common mistakes:</strong> Zero-indexing PostgreSQL arrays, using <code>-&gt;</code> when text output (<code>-&gt;&gt;</code>) is required for comparison.</p>
+            <p><strong>Quick recap:</strong> Arrays use 1-based indexing; JSONB is the preferred format for semi-structured data; metadata is accessible via INFORMATION_SCHEMA.</p>
+            <p><strong>Practice question:</strong> How do you extract a nested 'city' value from a JSONB column 'address' as text?</p>
+            <p><em>Answer:</em> <code>address-&gt;'location'-&gt;&gt;'city'</code></p>
+        </div>
     </section>
 
     <section id="section-4">
@@ -1182,322 +883,6 @@ GROUP BY region;</code></pre>
         </div>
     </section>
 </main>
-
-<script>
-    // Step 1: Copy to Clipboard Logic
-    document.querySelectorAll('pre').forEach(pre => {
-        const btn = document.createElement('button');
-        btn.className = 'copy-btn';
-        btn.innerText = 'Copy';
-        pre.appendChild(btn);
-
-        btn.addEventListener('click', () => {
-            const code = pre.querySelector('code').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                btn.innerText = 'Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.innerText = 'Copy';
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        });
-    });
-
-    // Step 2: Sidebar Collapsibility
-    document.querySelectorAll('.toc-part').forEach(part => {
-        part.addEventListener('click', () => {
-            part.classList.toggle('collapsed');
-            part.nextElementSibling.classList.toggle('collapsed');
-        });
-    });
-
-    // Step 2: Completion Checkboxes & Persistence
-    document.querySelectorAll('section').forEach(section => {
-        const id = section.id;
-        const header = section.querySelector('h3');
-        
-        // Create container for checkbox + header
-        const container = document.createElement('div');
-        container.className = 'section-header-container';
-        header.parentNode.insertBefore(container, header);
-        
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.className = 'completion-checkbox';
-        cb.checked = localStorage.getItem(`completed-${id}`) === 'true';
-        if (cb.checked) section.classList.add('completed');
-
-        cb.addEventListener('change', () => {
-            localStorage.setItem(`completed-${id}`, cb.checked);
-            section.classList.toggle('completed', cb.checked);
-        });
-
-        container.appendChild(cb);
-        container.appendChild(header);
-    });
-
-    // Ensure all h4s have ghost anchors for linking
-    document.querySelectorAll('section h4').forEach((h4, index) => {
-        const section = h4.closest('section');
-        const sectionId = section.id;
-        const anchorId = `${sectionId}-sub-anchor-${index}`;
-        
-        // Create ghost anchor
-        if (!section.querySelector(`#${anchorId}`)) {
-            const anchor = document.createElement('div');
-            anchor.id = anchorId;
-            anchor.className = 'sub-anchor';
-            h4.parentNode.insertBefore(anchor, h4);
-            
-            // Link h4 to its anchor for scrollspy
-            h4.setAttribute('data-anchor', anchorId);
-        }
-    });
-
-    // Step 2: Scrollspy
-    const sections = document.querySelectorAll('section');
-    const navLinks = document.querySelectorAll('#sidebar .toc-section a');
-    let lastActiveSectionId = '';
-    let lastActiveSubId = '';
-
-    const updateScrollspy = () => {
-        let current = '';
-        let currentSub = '';
-        
-        const scrollThreshold = 100; // Offset for detection
-
-        // Find active section
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            if (rect.top <= scrollThreshold) {
-                current = section.getAttribute('id');
-            }
-        });
-
-        // Find active h4 within the current section
-        if (current) {
-            const activeSectionEl = document.getElementById(current);
-            const h4s = activeSectionEl.querySelectorAll('h4');
-            h4s.forEach(h4 => {
-                const rect = h4.getBoundingClientRect();
-                // If the h4 is near the sticky position, highlight it
-                if (rect.top <= 120) {
-                    currentSub = h4.getAttribute('data-anchor');
-                }
-            });
-        }
-
-        // Only perform DOM updates if the section or subsection has changed
-        if (current !== lastActiveSectionId || currentSub !== lastActiveSubId) {
-            navLinks.forEach(link => {
-                const parentLi = link.parentElement;
-                const linkHref = link.getAttribute('href');
-                const isTargetSection = linkHref === '#' + current;
-                
-                link.classList.toggle('active', isTargetSection);
-
-                if (isTargetSection) {
-                    let existingSub = parentLi.querySelector('.toc-subsection');
-                    
-                    // Dynamic subsection injection
-                    if (!existingSub) {
-                        const sectionEl = document.getElementById(current);
-                        const subheaders = sectionEl.querySelectorAll('h4');
-                        
-                        if (subheaders.length > 0) {
-                            const subList = document.createElement('ul');
-                            subList.className = 'toc-subsection';
-                            subheaders.forEach(h4 => {
-                                const subLi = document.createElement('li');
-                                const subLink = document.createElement('a');
-                                subLink.href = '#' + h4.getAttribute('data-anchor');
-                                subLink.innerText = h4.innerText;
-                                subLi.appendChild(subLink);
-                                subList.appendChild(subLi);
-                            });
-                            parentLi.appendChild(subList);
-                            existingSub = subList;
-                        }
-                    }
-
-                    // Highlight active subsection link
-                    if (existingSub) {
-                        existingSub.querySelectorAll('a').forEach(subA => {
-                            subA.classList.toggle('active', subA.getAttribute('href') === '#' + currentSub);
-                        });
-                    }
-
-                    // Auto-expand parent if collapsed
-                    const wrapper = link.closest('.toc-section-wrapper');
-                    const part = wrapper.previousElementSibling;
-                    if (wrapper.classList.contains('collapsed')) {
-                        wrapper.classList.remove('collapsed');
-                        part.classList.remove('collapsed');
-                    }
-                } else {
-                    // Remove subsections for non-active sections
-                    const existingSub = parentLi.querySelector('.toc-subsection');
-                    if (existingSub) {
-                        existingSub.remove();
-                    }
-                }
-            });
-            lastActiveSectionId = current;
-            lastActiveSubId = currentSub;
-        }
-    };
-
-    window.addEventListener('scroll', updateScrollspy);
-    updateScrollspy(); // Initial call
-
-    // Step 4: Dark Mode Toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon = document.getElementById('theme-icon');
-    const themeText = document.getElementById('theme-text');
-    const body = document.body;
-
-    // Load saved theme
-    if (localStorage.getItem('theme') === 'dark') {
-        body.setAttribute('data-theme', 'dark');
-        themeIcon.innerText = '☀️';
-        themeText.innerText = 'Light Mode';
-    }
-
-    themeToggle.addEventListener('click', () => {
-        if (body.getAttribute('data-theme') === 'dark') {
-            body.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
-            themeIcon.innerText = '🌙';
-            themeText.innerText = 'Dark Mode';
-        } else {
-            body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-            themeIcon.innerText = '☀️';
-            themeText.innerText = 'Light Mode';
-        }
-    });
-
-    // Step 5: Sticky Header Border on Scroll
-    window.addEventListener('scroll', () => {
-        document.querySelectorAll('.section-header-container').forEach(el => {
-            if (el.getBoundingClientRect().top <= 0) {
-                el.style.borderBottom = '1px solid var(--border-ui)';
-            } else {
-                el.style.borderBottom = '1px solid transparent';
-            }
-        });
-    });
-
-    // Step 6: Full Text Search Logic
-    const searchInput = document.getElementById('sidebar-search');
-    const searchResults = document.getElementById('search-results');
-    const allSections = document.querySelectorAll('section');
-
-    function performSearch(query) {
-        searchResults.innerHTML = '';
-        if (!query.trim()) {
-            searchResults.style.display = 'none';
-            return;
-        }
-
-        const results = [];
-        const lowerQuery = query.toLowerCase();
-
-        allSections.forEach(section => {
-            const h3 = section.querySelector('h3');
-            const h4s = section.querySelectorAll('h4');
-            const textContent = section.innerText;
-            
-            let matchFound = false;
-            let sectionTitle = h3 ? h3.innerText : 'Untitled Section';
-            let matchedSubtitle = '';
-            let snippet = '';
-
-            // Search in H3
-            if (sectionTitle.toLowerCase().includes(lowerQuery)) {
-                matchFound = true;
-            }
-
-            // Search in H4s
-            h4s.forEach(h4 => {
-                if (h4.innerText.toLowerCase().includes(lowerQuery)) {
-                    matchFound = true;
-                    matchedSubtitle = h4.innerText;
-                }
-            });
-
-            // Search in full text if not already matched in headers
-            if (!matchFound && textContent.toLowerCase().includes(lowerQuery)) {
-                matchFound = true;
-            }
-
-            if (matchFound) {
-                // Generate snippet
-                const index = textContent.toLowerCase().indexOf(lowerQuery);
-                const start = Math.max(0, index - 40);
-                const end = Math.min(textContent.length, index + query.length + 60);
-                snippet = textContent.substring(start, end).replace(/\n/g, ' ').trim();
-                if (start > 0) snippet = '...' + snippet;
-                if (end < textContent.length) snippet = snippet + '...';
-
-                // Highlight the query in snippet
-                const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                snippet = snippet.replace(regex, '<mark>$1</mark>');
-
-                results.push({
-                    id: section.id,
-                    title: sectionTitle,
-                    subtitle: matchedSubtitle,
-                    snippet: snippet
-                });
-            }
-        });
-
-        if (results.length > 0) {
-            results.forEach(res => {
-                const item = document.createElement('div');
-                item.className = 'result-item';
-                item.innerHTML = `
-                    <span class="result-title">${res.title}</span>
-                    ${res.subtitle ? `<span class="result-subtitle">${res.subtitle}</span>` : ''}
-                    <span class="result-snippet">${res.snippet}</span>
-                `;
-                item.addEventListener('click', () => {
-                    document.getElementById(res.id).scrollIntoView({ behavior: 'smooth' });
-                    searchInput.value = '';
-                    searchResults.style.display = 'none';
-                    // Highlight the section temporarily
-                    const target = document.getElementById(res.id);
-                    target.style.outline = '2px solid var(--accent-color)';
-                    setTimeout(() => target.style.outline = 'none', 2000);
-                });
-                searchResults.appendChild(item);
-            });
-            searchResults.style.display = 'block';
-        } else {
-            searchResults.innerHTML = '<div class="result-item"><span class="result-snippet">No results found.</span></div>';
-            searchResults.style.display = 'block';
-        }
-    }
-
-    searchInput.addEventListener('input', (e) => performSearch(e.target.value));
-
-    // Close results when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-            searchResults.style.display = 'none';
-        }
-    });
-
-    // Handle "Esc" to close
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            searchResults.style.display = 'none';
-            searchInput.blur();
-        }
-    });
-</script>
 
 </body>
 </html>

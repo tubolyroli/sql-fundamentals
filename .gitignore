@@ -11,6 +11,11 @@ Thumbs.db
 *.log
 *.tmp
 *.bak
+main_raw.html
+
+# Data Files (Excluding from Repo)
+*.pdf
+*.docx
 
 # TeX/LaTeX intermediates
 *.aux

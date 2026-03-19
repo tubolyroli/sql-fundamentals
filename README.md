@@ -13,15 +13,14 @@ An interactive, searchable, and themeable documentation for SQL fundamentals, de
 
 ## 📂 Project Structure
 
-- `experiment.html`: The main interactive documentation (all-in-one file).
-- `main.tex`: LaTeX source for the documentation (useful for PDF generation).
-- `main.html`: Standard HTML version of the documentation.
-- `*.pdf`: Specialized deep-dives into various SQL topics (Joins, CTEs, Window Functions, etc.).
+- `index.html`: The main interactive documentation (Primary user version).
+- `experiment.html`: Experimental version for testing new features and UI improvements.
+- `main.tex`: LaTeX source for the documentation.
 
 ## 📖 How to Use
 
 1. Clone the repository: `git clone https://github.com/tubolyroli/sql-fundamentals.git`
-2. Open `experiment.html` in any modern web browser.
+2. Open `index.html` in any modern web browser.
 3. Use the sidebar to navigate or the search bar at the top to find specific SQL commands or concepts.
 
 ## 🛠️ Built With

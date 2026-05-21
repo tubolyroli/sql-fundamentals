@@ -2,16 +2,16 @@
 
 **[View Live Demo](https://tubolyroli.github.io/sql-fundamentals/)**
 
-Designed for students and data professionals.
+An interactive, searchable SQL fundamentals documentation with a live table of contents, dark mode, and persistent progress tracking.
 
-## 🚀 Features
-
-![Search](https://img.shields.io/badge/Search-Enabled-brightgreen?style=for-the-badge)
-![Interactive TOC](https://img.shields.io/badge/Interactive%20TOC-Scrollspy-blue?style=for-the-badge)
-![Dark Mode](https://img.shields.io/badge/Dark%20Mode-Supported-blueviolet?style=for-the-badge)
-![Copy to Clipboard](https://img.shields.io/badge/Copy%20to%20Clipboard-1--click-orange?style=for-the-badge)
-![Checklist](https://img.shields.io/badge/Checklist-Persistent-success?style=for-the-badge)
-![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-informational?style=for-the-badge)
+<p align="center">
+  <img alt="Search" src="https://img.shields.io/badge/Search-Enabled-brightgreen?style=for-the-badge">
+  <img alt="Interactive TOC" src="https://img.shields.io/badge/Interactive%20TOC-Scrollspy-blue?style=for-the-badge">
+  <img alt="Dark Mode" src="https://img.shields.io/badge/Dark%20Mode-Supported-blueviolet?style=for-the-badge">
+  <img alt="Copy to Clipboard" src="https://img.shields.io/badge/Copy%20to%20Clipboard-1--click-orange?style=for-the-badge">
+  <img alt="Checklist" src="https://img.shields.io/badge/Checklist-Persistent-success?style=for-the-badge">
+  <img alt="Responsive" src="https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-informational?style=for-the-badge">
+</p>
 
 ## 📖 How to Use
 

@@ -6,12 +6,12 @@ Designed for students and data professionals.
 
 ## 🚀 Features
 
-- 🔍 Searchable
-- 📑 Interactive TOC
-- 🌓 Dark Mode Support
-- 📋 Copy-to-Clipboard
-- ✅ Checklist Integration
-- 📱 Responsive Design
+![Search](https://img.shields.io/badge/Search-Enabled-brightgreen?style=for-the-badge)
+![Interactive TOC](https://img.shields.io/badge/Interactive%20TOC-Scrollspy-blue?style=for-the-badge)
+![Dark Mode](https://img.shields.io/badge/Dark%20Mode-Supported-blueviolet?style=for-the-badge)
+![Copy to Clipboard](https://img.shields.io/badge/Copy%20to%20Clipboard-1--click-orange?style=for-the-badge)
+![Checklist](https://img.shields.io/badge/Checklist-Persistent-success?style=for-the-badge)
+![Responsive](https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-informational?style=for-the-badge)
 
 ## 📖 How to Use
 
@@ -21,9 +21,10 @@ Designed for students and data professionals.
 
 ## 🛠️ Built With
 
-- 🌐 HTML5/CSS3
-- ⚡ Vanilla JavaScript
-- ✨ Highlight.js
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Highlight.js](https://img.shields.io/badge/Highlight.js-323330?style=for-the-badge)
 
 ## 📄 License
 

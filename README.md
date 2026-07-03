@@ -2,7 +2,7 @@
 
 **[View Live Demo](https://tubolyroli.github.io/sql-fundamentals/)**
 
-An interactive, searchable SQL fundamentals documentation with a live table of contents, dark mode, and persistent progress tracking.
+An interactive, searchable SQL fundamentals handbook for entry-level data analysts and data scientists — 29 sections across 7 parts, from query execution order and joins to window functions, NULL logic, keys and constraints, indexes and query performance, classic interview patterns, and dialect differences (PostgreSQL, MySQL, SQL Server, BigQuery). With a live table of contents, dark mode, and persistent progress tracking.
 
 <p align="center">
   <img alt="Search" src="https://img.shields.io/badge/Search-Enabled-brightgreen?style=for-the-badge">
@@ -10,6 +10,7 @@ An interactive, searchable SQL fundamentals documentation with a live table of c
   <img alt="Dark Mode" src="https://img.shields.io/badge/Dark%20Mode-Supported-blueviolet?style=for-the-badge">
   <img alt="Copy to Clipboard" src="https://img.shields.io/badge/Copy%20to%20Clipboard-1--click-orange?style=for-the-badge">
   <img alt="Checklist" src="https://img.shields.io/badge/Checklist-Persistent-success?style=for-the-badge">
+  <img alt="Interview Prep" src="https://img.shields.io/badge/Interview%20Prep-Patterns%20%26%20Dialects-red?style=for-the-badge">
   <img alt="Responsive" src="https://img.shields.io/badge/Responsive-Mobile%20%26%20Desktop-informational?style=for-the-badge">
 </p>
 

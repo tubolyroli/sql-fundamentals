@@ -113,7 +113,8 @@
             border-radius: 20px;
             cursor: pointer;
             z-index: 1000;
-            font-size: 13px;
+            font-family: var(--font-mono);
+            font-size: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -256,6 +257,17 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--text-muted);
+        }
+        #toc-progress.committed .toc-progress-fill {
+            animation: commit-flash 0.8s ease-out;
+        }
+        #toc-progress.committed #toc-progress-label {
+            color: var(--done);
+            text-transform: none;
+        }
+        @keyframes commit-flash {
+            0% { box-shadow: 0 0 0 0 rgba(62, 155, 79, 0.6); }
+            100% { box-shadow: 0 0 0 10px rgba(62, 155, 79, 0); }
         }
 
         #search-results {
@@ -659,7 +671,7 @@
 
 <nav id="sidebar">
     <div class="search-container">
-        <input type="text" id="sidebar-search" placeholder="Search documentation..." autocomplete="off">
+        <input type="text" id="sidebar-search" placeholder="Search docs…  ( / )" autocomplete="off">
         <div id="search-results"></div>
     </div>
     <h2>Table of Contents</h2>
@@ -744,7 +756,7 @@
 
 <button class="theme-toggle" id="theme-toggle">
     <span id="theme-icon">🌙</span>
-    <span id="theme-text">Dark Mode</span>
+    <span id="theme-text">SET theme = 'dark';</span>
 </button>
 
 <main id="content">
@@ -1952,8 +1964,13 @@ QUALIFY ROW_NUMBER() OVER (
         const done = document.querySelectorAll('section.completed').length;
         const fill = document.querySelector('#toc-progress .toc-progress-fill');
         const label = document.getElementById('toc-progress-label');
+        const meter = document.getElementById('toc-progress');
+        const committed = total > 0 && done === total;
         if (fill) fill.style.width = (total ? (done / total) * 100 : 0) + '%';
-        if (label) label.innerText = done + ' / ' + total + ' sections done';
+        if (meter) meter.classList.toggle('committed', committed);
+        if (label) label.innerText = committed
+            ? 'COMMIT; -- all ' + total + ' sections'
+            : done + ' / ' + total + ' rows affected';
     }
     updateCompletionMeter();
 
@@ -1964,6 +1981,24 @@ QUALIFY ROW_NUMBER() OVER (
         const pct = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
         readingProgress.style.width = pct + '%';
     });
+
+    // Typewriter effect on the hero prompt
+    (function () {
+        const prompt = document.querySelector('.hero-prompt');
+        if (!prompt || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const parts = [];
+        const walker = document.createTreeWalker(prompt, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) parts.push({ node: node, text: node.textContent });
+        parts.forEach(p => p.node.textContent = '');
+        let i = 0, j = 0;
+        const tick = setInterval(() => {
+            if (i >= parts.length) { clearInterval(tick); return; }
+            parts[i].node.textContent += parts[i].text[j];
+            j++;
+            if (j >= parts[i].text.length) { i++; j = 0; }
+        }, 26);
+    })();
 
     // Ensure all h4s have ghost anchors for linking
     document.querySelectorAll('section h4').forEach((h4, index) => {
@@ -2089,7 +2124,7 @@ QUALIFY ROW_NUMBER() OVER (
     if (localStorage.getItem('theme') === 'dark') {
         body.setAttribute('data-theme', 'dark');
         themeIcon.innerText = '☀️';
-        themeText.innerText = 'Light Mode';
+        themeText.innerText = "SET theme = 'light';";
     }
 
     themeToggle.addEventListener('click', () => {
@@ -2097,12 +2132,12 @@ QUALIFY ROW_NUMBER() OVER (
             body.removeAttribute('data-theme');
             localStorage.setItem('theme', 'light');
             themeIcon.innerText = '🌙';
-            themeText.innerText = 'Dark Mode';
+            themeText.innerText = "SET theme = 'dark';";
         } else {
             body.setAttribute('data-theme', 'dark');
             localStorage.setItem('theme', 'dark');
             themeIcon.innerText = '☀️';
-            themeText.innerText = 'Light Mode';
+            themeText.innerText = "SET theme = 'light';";
         }
     });
 
@@ -2204,7 +2239,7 @@ QUALIFY ROW_NUMBER() OVER (
             });
             searchResults.style.display = 'block';
         } else {
-            searchResults.innerHTML = '<div class="result-item"><span class="result-snippet">No results found.</span></div>';
+            searchResults.innerHTML = '<div class="result-item"><span class="result-snippet" style="font-family: var(--font-mono);">0 rows returned</span></div>';
             searchResults.style.display = 'block';
         }
     }
@@ -2224,6 +2259,16 @@ QUALIFY ROW_NUMBER() OVER (
             searchResults.style.display = 'none';
             searchInput.blur();
         }
+    });
+
+    // Press "/" anywhere to focus search
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+        const t = e.target;
+        if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
     });
 
     // Step 7: Back to Top Logic

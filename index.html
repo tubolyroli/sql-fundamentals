@@ -539,19 +539,36 @@
             border-radius: 10px 10px 0 0;
             margin-bottom: 0;
         }
+        /* macOS-style window title bar: centered title, hairline divider */
         pre::before {
             content: 'SQL';
             position: absolute;
-            top: 12px; left: 16px;
+            top: 0; left: 0; right: 0;
+            height: 34px;
+            line-height: 34px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid var(--code-border);
+            border-radius: 10px 10px 0 0;
             font-family: var(--font-mono);
             font-size: 0.62rem;
             font-weight: 600;
             letter-spacing: 0.22em;
             color: var(--code-label);
         }
+        /* Traffic lights: close, minimize, zoom */
+        pre::after {
+            content: '';
+            position: absolute;
+            top: 12px; left: 14px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #FF5F57;
+            box-shadow: 17px 0 0 #FEBC2E, 34px 0 0 #28C840;
+        }
         pre code {
             display: block;
-            padding: 36px 20px 20px 20px !important;
+            padding: 50px 20px 20px 20px !important;
             background: transparent !important;
             color: #DCE6F0;
             font-size: 0.86rem;
@@ -561,7 +578,7 @@
         pre:hover .copy-btn { opacity: 1; }
 
         .copy-btn {
-            position: absolute; top: 8px; right: 8px; padding: 4px 10px;
+            position: absolute; top: 6px; right: 8px; padding: 3px 10px;
             font-family: var(--font-mono); font-size: 11px;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid #33465A; border-radius: 5px;

@@ -890,6 +890,14 @@ UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 COMMIT;</code></pre>
         <div class="output">Output: Transfers 100 between accounts; if either update fails, neither takes effect.</div>
 
+        <h4>I.3.5. UPSERT: Insert or Update</h4>
+        <p>Loading data often means "insert if new, update if it already exists." PostgreSQL expresses this with <code>INSERT ... ON CONFLICT</code>, where <code>EXCLUDED</code> refers to the row that was proposed for insertion. MySQL uses <code>ON DUPLICATE KEY UPDATE</code>; SQL Server and BigQuery use <code>MERGE</code>. The conflict target must be covered by a unique or primary key constraint.</p>
+        <pre><code class="language-sql">INSERT INTO daily_stats (day, visits)
+VALUES ('2024-03-01', 42)
+ON CONFLICT (day)
+DO UPDATE SET visits = EXCLUDED.visits;</code></pre>
+        <div class="output">Output: Inserts the row, or overwrites visits if a row for that day already exists.</div>
+
         <div class="recap">
             <p><strong>Common mistakes:</strong> Running UPDATE or DELETE without a WHERE clause; assuming TRUNCATE can filter rows.</p>
             <p><strong>Quick recap:</strong> DELETE removes rows, TRUNCATE empties a table, DROP removes the table; transactions make multi-step changes atomic.</p>
@@ -1096,6 +1104,12 @@ ON p1.country = p2.country;</code></pre>
 
         <h4>III.1.2. CROSS JOIN and Self Joins</h4>
         <p><code>CROSS JOIN</code> creates all possible combinations between two tables without an <code>ON</code> or <code>USING</code> clause. Self joins connect a table to itself, requiring aliases.</p>
+        <p>The canonical self join: an employees table where each row stores its manager's id. Joining the table to itself pairs every employee with their manager's attributes — the setup behind the classic "employees earning more than their manager" interview question.</p>
+        <pre><code class="language-sql">SELECT e.name AS employee, m.name AS manager
+FROM employees e
+INNER JOIN employees m ON e.manager_id = m.id
+WHERE e.salary > m.salary;</code></pre>
+        <div class="output">Output: Employees whose salary exceeds their own manager's.</div>
 
         <h4>III.1.3. Semi and Anti Joins</h4>
         <ul>
@@ -1178,7 +1192,7 @@ GROUP BY season;</code></pre>
         <div class="callout">
             <p><strong>Learning goals:</strong> Nest queries for complex filtering and structure.</p>
             <p><strong>Prerequisites:</strong> Section I.1., III.1.</p>
-            <p><strong>Key terms:</strong> Subquery, Correlated, CTE.</p>
+            <p><strong>Key terms:</strong> Subquery, Correlated, CTE, Recursive CTE.</p>
         </div>
         <h4>III.4.1. The EXISTS Operator</h4>
         <p>The <code>EXISTS</code> operator evaluates whether a subquery returns any records, acting as a boolean filter.</p>
@@ -1204,7 +1218,23 @@ GROUP BY season;</code></pre>
 SELECT COUNT(id) FROM s1;</code></pre>
         <div class="output">Output: Defines a temporary table s1 holding matches with 10+ home goals, then counts them.</div>
 
-        <h4>III.4.5. Strategic Selection</h4>
+        <h4>III.4.5. Recursive CTEs</h4>
+        <p>A recursive CTE references itself: an anchor query supplies the starting rows, and the recursive part repeatedly joins back to its own output until no new rows appear. This is the standard tool for hierarchies — org charts, category trees, bills of materials — where the depth isn't known in advance.</p>
+        <pre><code class="language-sql">WITH RECURSIVE org AS (
+    SELECT id, name, manager_id, 1 AS depth
+    FROM employees
+    WHERE manager_id IS NULL          -- anchor: the CEO
+
+    UNION ALL
+
+    SELECT e.id, e.name, e.manager_id, org.depth + 1
+    FROM employees e
+    JOIN org ON e.manager_id = org.id -- recurse: direct reports
+)
+SELECT name, depth FROM org ORDER BY depth;</code></pre>
+        <div class="output">Output: Every employee with their level in the hierarchy, starting from the CEO at depth 1.</div>
+
+        <h4>III.4.6. Strategic Selection</h4>
         <ul>
             <li><strong>Joins</strong>: Simple combinations/aggregations.</li>
             <li><strong>Correlated Subqueries</strong>: Match subqueries to tables while avoiding join limits.</li>
@@ -1634,7 +1664,7 @@ FROM measurements;</code></pre>
         <div class="callout">
             <p><strong>Learning goals:</strong> Apply complex SQL patterns to solve real-world business and data science problems.</p>
             <p><strong>Prerequisites:</strong> Section I.1., II.3., IV.2., VII.1.</p>
-            <p><strong>Key terms:</strong> Retention, Cohort Analysis, YoY Growth, Cumulative Sum.</p>
+            <p><strong>Key terms:</strong> Retention, Cohort Analysis, YoY Growth, Cumulative Sum, Funnel, Date Spine.</p>
         </div>
 
         <h4>VII.2.1. Retention and Cohort Analysis</h4>
@@ -1681,6 +1711,37 @@ FROM yearly_sales;</code></pre>
     SUM(CASE WHEN quarter = 2 THEN revenue ELSE 0 END) AS q2_revenue
 FROM regional_sales
 GROUP BY region;</code></pre>
+
+        <h4>VII.2.5. Funnel and Conversion Analysis</h4>
+        <p>A funnel measures how many users survive each step of a flow (viewed → added to cart → purchased). Count <em>distinct users</em> per step with conditional aggregation, then divide steps for conversion rates. Counting users rather than events is the crucial detail — one user viewing ten times is still one potential converter.</p>
+        <pre><code class="language-sql">SELECT
+    COUNT(DISTINCT CASE WHEN event = 'view'     THEN user_id END) AS viewed,
+    COUNT(DISTINCT CASE WHEN event = 'add_cart' THEN user_id END) AS added,
+    COUNT(DISTINCT CASE WHEN event = 'purchase' THEN user_id END) AS purchased,
+    ROUND(
+        COUNT(DISTINCT CASE WHEN event = 'purchase' THEN user_id END)::NUMERIC
+      / NULLIF(COUNT(DISTINCT CASE WHEN event = 'view' THEN user_id END), 0), 3
+    ) AS view_to_purchase
+FROM events;</code></pre>
+        <div class="output">Output: Distinct users at each funnel step and the overall view→purchase conversion rate.</div>
+        <p>For a strict, ordered funnel (each step must happen <em>after</em> the previous one), compute each user's first timestamp per step and require the timestamps to be increasing.</p>
+
+        <h4>VII.2.6. Date Spines: Filling Gaps in Time Series</h4>
+        <p><code>GROUP BY</code> only returns groups that exist — a month with zero orders simply disappears from the result, silently corrupting trend lines and moving averages. The fix is a "date spine": generate the complete calendar, LEFT JOIN the data onto it, and <code>COALESCE</code> the missing values to zero.</p>
+        <pre><code class="language-sql">WITH spine AS (
+    SELECT generate_series(
+        '2024-01-01'::DATE, '2024-12-01'::DATE,
+        INTERVAL '1 month'
+    )::DATE AS month
+)
+SELECT s.month, COALESCE(SUM(o.amount), 0) AS revenue
+FROM spine s
+LEFT JOIN orders o
+    ON DATE_TRUNC('month', o.order_date) = s.month
+GROUP BY s.month
+ORDER BY s.month;</code></pre>
+        <div class="output">Output: All twelve months, with 0 revenue for months that had no orders.</div>
+        <p>Warehouses without <code>generate_series</code> use a prebuilt calendar (dim_date) table — same pattern. BigQuery: <code>UNNEST(GENERATE_DATE_ARRAY(...))</code>.</p>
 
         <div class="recap">
             <p><strong>Common mistakes:</strong> Using <code>DATE_PART</code> instead of <code>DATE_TRUNC</code> for cohorts (losing the year context), forgetting to handle division by zero in growth calculations.</p>
